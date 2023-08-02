@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Facility Booking</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <style>
+    /* Add your CSS styling here */
+    body {
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      text-align: center;
+    }
+    .booking-form {
+      width: 300px;
+      margin: 0 auto;
+    }
+    .input-field {
+      margin-bottom: 10px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .error-msg {
+      color: red;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="mt-5 mb-4">Facility Booking</h1>
+  <div class="booking-form">
+    <div class="input-field">
+      <label for="facility">Facility:</label>
+      <select id="facility" class="form-control">
+        <option value="clubhouse">Clubhouse</option>
+        <option value="tennis_court">Tennis Court</option>
+      </select>
+    </div>
+    <div class="input-field">
+      <label for="date">Date:</label>
+      <input class="form-control" type="date" id="date">
+    </div>
+    <div class="input-field">
+      <label for="start-time">Start Time:</label>
+      <input class="form-control" type="time" id="start-time">
+    </div>
+    <div class="input-field">
+      <label for="end-time">End Time:</label>
+      <input class="form-control" type="time" id="end-time">
+    </div>
+    <div>
+      <button class="btn" onclick="bookFacility()">Book Facility</button>
+    </div>
+    <div class="error-msg" id="error-msg"></div>
+    <div id="output"></div>
+  </div>
+
+    <script>
+        // Define facility booking details
+const facilities = {
+  clubhouse: {
+    slots: [
+      { start: '10:00', end: '16:00', rate: 100 },
+      { start: '16:00', end: '22:00', rate: 500 }
+    ]
+  },
+  tennis_court: {
+    slots: [{ start: '00:00', end: '23:59', rate: 50 }]
+  }
+};
+
+// Initialize booked slots
+const bookedSlots = {};
+
+function bookFacility() {
+  const facility = document.getElementById('facility').value;
+  const date = document.getElementById('date').value;
+  const startTime = document.getElementById('start-time').value;
+  const endTime = document.getElementById('end-time').value;
+
+  const errorDiv = document.getElementById('error-msg');
+  const outputDiv = document.getElementById('output');
+
+  // Check for valid input
+  if (!facility || !date || !startTime || !endTime) {
+    errorDiv.textContent = 'Please fill all the fields.';
+    return;
+  }
+
+  const bookingKey = `${facility}-${date}-${startTime}-${endTime}`;
+
+  // Check if the slot is available
+  if (bookedSlots[bookingKey]) {
+    outputDiv.textContent = 'Booking Failed, Already Booked';
+    return;
+  }
+
+  // Calculate booking amount
+  const bookingDetails = facilities[facility].slots.find(
+    slot =>
+      isTimeBetween(slot.start, startTime, endTime) &&
+      isTimeBetween(slot.end, startTime, endTime)
+  );
+
+  if (!bookingDetails) {
+    errorDiv.textContent = 'Invalid time slot.';
+    return;
+  }
+
+  const bookingAmount = calculateBookingAmount(bookingDetails.rate, startTime, endTime);
+
+  // Update booked slots
+  bookedSlots[bookingKey] = bookingAmount;
+
+  // Display successful booking
+  outputDiv.textContent = `Booked, Rs. ${bookingAmount}`;
+}
+
+function isTimeBetween(time, startTime, endTime) {
+  return time >= startTime && time <= endTime;
+}
+
+function calculateBookingAmount(rate, startTime, endTime) {
+  const start = new Date(`1970-01-01 ${startTime}`);
+  const end = new Date(`1970-01-01 ${endTime}`);
+  const hours = (end - start) / 3600000; // Milliseconds to hours
+  return rate * hours;
+}
+
+    </script>
+</body>
+</html>
